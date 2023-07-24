@@ -1,6 +1,31 @@
-Type:          Single, Span, Stripe, Mirror, RAID-5
-Size:          10, 100, 500, 1000, 5000, 10000, 40000
-Format method: Quick, Slow
-File system:   FAT, FAT32, NTFS
-Cluster size:  512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
-Compression:   On, Off
+# ------------------------------------------------------------------------
+# Create and format a volume
+# ------------------------------------------------------------------------
+
+TYPE:    Single,Span,Stripe,Mirror,RAID-5
+SIZE:    10,1000,5000,40000
+FSYSTEM: FAT,FAT32,NTFS
+CLUSTER: 1024,4096,8192,32768,65536
+COMPRESSION: on,off
+
+# ------------------------------------------------------------------------
+# Sub-models
+# ------------------------------------------------------------------------
+
+{TYPE,SIZE,FSYSTEM,CLUSTER} @ 1
+
+# ------------------------------------------------------------------------
+# File systems have constraints on volume size
+# ------------------------------------------------------------------------
+
+IF [FSYSTEM] = "FAT"   THEN [SIZE] <= 4096;
+IF [FSYSTEM] = "FAT32" THEN [SIZE] <= 32000;
+
+# ------------------------------------------------------------------------
+# Compression can be applied only for volumes
+# formatted as NTFS and with cluster size <= 4K
+# ------------------------------------------------------------------------
+
+IF [FSYSTEM] in {"FAT", "FAT32"} or 
+  ([FSYSTEM] = "NTFS" and
+   [CLUSTER] >  4096) THEN [COMPRESSION] = "off";
